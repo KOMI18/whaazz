@@ -1,0 +1,55 @@
+name: whaazz deploy
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executing remote ssh commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 30m
+          timeout: 60s
+          script: |
+            cd ~/automation/whaazz
+            
+            if [ ! -d ".git" ]; then
+              echo "Le dossier n'est pas un repo Git. Nettoyage et clonage..."
+              rm -rf *
+              rm -rf .* 2>/dev/null || true
+              git clone git@github.com:KOMI18/whaazz.git .
+            else
+              echo "Repo existant. Mise à jour via git pull..."
+              git pull origin main
+            fi
+
+            if [ ! -f "docker-compose.yml" ]; then
+              echo "ERREUR : docker-compose.yml non trouvé !"
+              exit 1
+            fi
+            
+            # 4. Génération propre du fichier .env
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+            echo "R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }}" >> .env
+            echo "R2_BUCKET_NAME=${{ secrets.R2_BUCKET_NAME }}" >> .env
+            echo "R2_ENDPOINT=${{ secrets.R2_ENDPOINT }}" >> .env
+            echo "R2_PUBLIC_CUSTOM_DOMAIN=${{ secrets.R2_PUBLIC_CUSTOM_DOMAIN }}" >> .env
+            echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env
+            
+            # 5. Relance du container
+            docker compose up -d --build
+            
+            # 6. Migration Prisma
+            echo "Exécution des migrations Prisma..."
+            sleep 5
+            docker compose exec -T backend npx prisma migrate deploy

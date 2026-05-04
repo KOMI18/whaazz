@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: whaazz_backend
+    build: .
+    restart: always
+    ports:
+      - "3005:3000" # Accès via le port 3005 sur ton VPS
+    env_file:
+      - .env
+    networks:
+      - evolution_net
+
+networks:
+  evolution_net:
+    external: true # Utilise le réseau déjà créé par Evolution API

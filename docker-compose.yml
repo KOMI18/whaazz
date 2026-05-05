@@ -10,8 +10,9 @@ services:
     env_file:
       - .env
     networks:
-      - evolution_net
+      - evo_evolution_net
 
 networks:
-  evolution_net:
+  evo_evolution_net:
+    name: evo_evolution_net
     external: true # Utilise le réseau déjà créé par Evolution API

@@ -60,3 +60,14 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erreur lors de la connexion." });
   }
 };
+
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie('whaazz_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  });
+  
+  res.status(200).json({ message: "Déconnexion réussie" });
+};

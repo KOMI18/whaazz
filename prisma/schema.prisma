@@ -64,11 +64,12 @@ model Product {
 
 model Order {
   id            Int         @id @default(autoincrement())
-  customerPhone String      @map("customer_phone")
+  customerPhone String?      @map("customer_phone")
   totalAmount   Int         @map("total_amount")
   status        String      @default("PENDING") // PENDING, PAID, SHIPPED, CANCELLED
   paymentRef    String?     @map("payment_ref")
-
+  location      String?
+  customer_name String?
   createdAt     DateTime    @default(now()) @map("created_at")
   items         OrderItem[]
   @@map("orders")

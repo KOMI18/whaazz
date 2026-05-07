@@ -9,7 +9,9 @@ export const createProduct = async (req: Request, res: Response) => {
   try {
     const { name, price, stock, category } = req.body;
     const file = req.file;
-
+    if(req.userId === undefined) {
+      return res.status(401).json({ error: "Non autorisé : ID utilisateur manquant dans le token." });
+    }
     if (!file) {
       return res.status(400).json({ error: "L'image du vêtement est requise." });
     }
@@ -54,7 +56,8 @@ Si l'image ne représente absolument pas un vêtement ou un accessoire de mode, 
         stock: parseInt(stock),
         category,
         imageUrl,
-        visualDescription
+        visualDescription,
+        userId: req.userId
       }
     });
 

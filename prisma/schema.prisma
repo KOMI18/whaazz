@@ -6,6 +6,44 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+enum AGENTSTATUS {
+  CONNECTED
+  DISCONNECTED
+  CONNECTING
+}
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  agents    Agent[]
+  products Product[]
+  @@map("users")
+}
+ 
+
+// --- MULTI-AGENT MANAGEMENT ---
+model Agent {
+  id             String   @id @default(cuid())
+  name           String   
+  instanceName   String   @unique @map("instance_name") 
+  systemPrompt   String?   @db.Text @map("system_prompt")
+  isActive       Boolean  @default(true) @map("is_active")
+  domain         String 
+  businessName   String  
+  businessGoal   String
+  userId         String   @map("user_id")
+  user           User     @relation(fields: [userId], references: [id])
+  status         AGENTSTATUS @default(DISCONNECTED)
+ 
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("agents")
+}
+
+// --- E-COMMERCE LOGIC ---
 model Product {
   id                Int         @id @default(autoincrement())
   name              String
@@ -14,6 +52,10 @@ model Product {
   category          String?
   imageUrl          String?     @map("image_url")
   visualDescription String?     @map("visual_description") @db.Text
+  
+
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
   createdAt         DateTime    @default(now()) @map("created_at")
   items             OrderItem[]
 
@@ -26,9 +68,9 @@ model Order {
   totalAmount   Int         @map("total_amount")
   status        String      @default("PENDING") // PENDING, PAID, SHIPPED, CANCELLED
   paymentRef    String?     @map("payment_ref")
+
   createdAt     DateTime    @default(now()) @map("created_at")
   items         OrderItem[]
-
   @@map("orders")
 }
 
@@ -44,6 +86,7 @@ model OrderItem {
 
   @@map("order_items")
 }
+// ====== N8N MODEL========
 model Chat {
   id             String    @id
   remoteJid      String    @db.VarChar(100)

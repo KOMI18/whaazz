@@ -45,6 +45,12 @@ jobs:
             echo "R2_ENDPOINT=${{ secrets.R2_ENDPOINT }}" >> .env
             echo "R2_PUBLIC_CUSTOM_DOMAIN=${{ secrets.R2_PUBLIC_CUSTOM_DOMAIN }}" >> .env
             echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env
+
+            echo "EVOLUTION_API_URL=${{ secrets.EVOLUTION_API_URL }}" >> .env
+            echo "EVOLUTION_API_KEY=${{ secrets.EVOLUTION_API_KEY }}" >> .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "EVOLUTION_INSTANCE_TOKEN=${{ secrets.EVOLUTION_INSTANCE_TOKEN }}" >> .env
+            echo "WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}" >> .env
             
             # 5. Relance du container
             docker compose up -d --build

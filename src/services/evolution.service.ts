@@ -12,7 +12,7 @@ createInstance: async (instanceName: string) => {
     integration: "WHATSAPP-BAILEYS",
     token: process.env.EVOLUTION_INSTANCE_TOKEN,
     webhook: {
-      url: process.env.webhook_url,
+      url: process.env.WEBHOOK_URL,
       byEvents: false,
       base64: true, 
       events: [

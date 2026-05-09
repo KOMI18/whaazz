@@ -51,6 +51,7 @@ jobs:
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
             echo "EVOLUTION_INSTANCE_TOKEN=${{ secrets.EVOLUTION_INSTANCE_TOKEN }}" >> .env
             echo "WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}" >> .env
+            echo "ORIGIN=${{ secrets.ORIGIN }}" >> .env
             
             # 5. Relance du container
             docker compose up -d --build

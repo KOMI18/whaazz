@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import 'dotenv/config';
 import routes from './routes/index.js';
 import morgan from 'morgan';
@@ -12,10 +12,29 @@ const httpServer = createServer(app);
 app.use(cookieParser());
 app.use(morgan('dev'));
 
-const corsOptions = {
-  origin: process.env.ORIGIN,
+
+const allowedOrigins: (string | undefined)[] = [
+  process.env.ORIGIN,
+  'https://whaazz.invity.site',
+  'http://localhost:3000',
+  'vscode-webview://'
+];
+
+const corsOptions: CorsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Autorise les requêtes sans origine (comme Postman, mobile, ou curl)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,                  
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 const io = new Server(httpServer, {

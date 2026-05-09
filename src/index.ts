@@ -21,21 +21,11 @@ const allowedOrigins: (string | undefined)[] = [
 ];
 
 const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Autorise les requêtes sans origine (comme Postman, mobile, ou curl)
-    if (!origin) {
-      return callback(null, true);
-    }
-    
-    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+origin: 'https://whaazz.invity.site', 
   credentials: true,                  
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
 };
 const io = new Server(httpServer, {
   cors: corsOptions,

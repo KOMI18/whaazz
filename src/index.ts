@@ -31,7 +31,7 @@ const io = new Server(httpServer, {
   cors: corsOptions,
 });
 // Middlewares
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 // Routes

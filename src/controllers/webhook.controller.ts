@@ -20,7 +20,7 @@ export const handleEvolutionWebhook = async (req: Request, res: Response) => {
             status: data.status === "open" ? "CONNECTED" : "DISCONNECTED",
             isActive: data.status === "open"
         });
-        break;{{ $('Webhook').item.json.body.data.messageType }}
+        break;
 
       case "messages.upsert":
         const workflowData = await prisma.agent.findFirst({

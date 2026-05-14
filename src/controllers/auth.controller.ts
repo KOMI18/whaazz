@@ -48,11 +48,11 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: '7d' }
     );
      res.cookie('whaazz_token', token, {
-      httpOnly: true,         // Interdit l'accès via JavaScript (protection XSS)
-      secure: process.env.NODE_ENV === 'production', // Uniquement en HTTPS en production
-      sameSite: 'lax',       // Protection contre CSRF
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours en millisecondes
-      path: '/',             // Disponible sur tout le domaine
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
     });
     res.json({
        id: user.id, name: user.name, email: user.email 

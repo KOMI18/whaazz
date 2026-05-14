@@ -7,6 +7,8 @@ import {authenticate} from '../middlewares/auth.middleware.js';
 import webhookRoutes from './webhook.route.js';
 const router = Router();
 router.use('/auth', authRoutes);    
+console.log('ROUTES INDEX CHARGE');
+console.log(authRoutes);
 router.use('/webhook', webhookRoutes);
 router.use(authenticate);
 router.use('/products', productRoutes);

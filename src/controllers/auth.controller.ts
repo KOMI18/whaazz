@@ -26,6 +26,7 @@ export const register = async (req: Request, res: Response) => {
 
     res.status(201).json({ message: "Utilisateur créé avec succès" });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Erreur lors de l'inscription." });
   }
 };
@@ -57,6 +58,7 @@ export const login = async (req: Request, res: Response) => {
        id: user.id, name: user.name, email: user.email 
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Erreur lors de la connexion." });
   }
 };

@@ -53,10 +53,18 @@ jobs:
             echo "WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}" >> .env
             echo "ORIGIN=${{ secrets.ORIGIN }}" >> .env
             
-            # 5. Relance du container
-            docker compose up -d --build
             
-            # 6. Migration Prisma
-            echo "Exécution des migrations Prisma..."
-            sleep 5
-            docker compose exec -T backend npx prisma migrate deploy
+            
+            docker compose build --no-cache
+
+            # 5. démarrer DB + services dépendants
+            docker compose up -d db
+
+            # 6. attendre DB ready
+            sleep 10
+
+            # 7. migration PRISMA (IMPORTANT ICI)
+            docker compose run --rm backend npx prisma migrate deploy
+
+            # 8. démarrer backend
+            docker compose up -d backend

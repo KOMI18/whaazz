@@ -47,10 +47,11 @@ export const login = async (req: Request, res: Response) => {
       JWT_SECRET,
       { expiresIn: '7d' }
     );
-     res.cookie('whaazz_token', token, {
+    res.cookie('whaazz_token', token, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
+      domain: '.invity.site',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
     });

@@ -21,17 +21,21 @@ const allowedOrigins: (string | undefined)[] = [
 ];
 
 const corsOptions: CorsOptions = {
-origin: 'https://whaazz.invity.site', 
-  credentials: true,                  
+  origin: [
+    'https://whaazz.invity.site',
+    'http://localhost:3000'
+  ],
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
+
 const io = new Server(httpServer, {
   cors: corsOptions,
 });
 // Middlewares
-app.use(cors());
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // Routes

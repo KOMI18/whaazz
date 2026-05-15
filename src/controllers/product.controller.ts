@@ -7,48 +7,58 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { name, price, stock, category } = req.body;
+    const { name, price, stock, category , description } = req.body;
     const file = req.file;
-    if(req.userId === undefined) {
+
+    if (req.userId === undefined) {
       return res.status(401).json({ error: "Non autorisé : ID utilisateur manquant dans le token." });
     }
     if (!file) {
-      return res.status(400).json({ error: "L'image du vêtement est requise." });
+      return res.status(400).json({ error: "L'image du produit est requise." });
     }
 
-    // 1. Upload vers Cloudflare R2
+    // 1. Upload vers le stockage Cloud (Cloudflare R2, S3, etc.)
     const imageUrl = await StorageService.uploadFile(file, 'products');
 
-    // 2. Génération de la description visuelle (Vision AI)
+    // 2. Génération de la description visuelle générique multi-secteurs (Vision AI)
     const aiResponse = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "user",
           content: [
-            { type: "text", text: `Tu es un expert en mode et stylisme pour SHIEN ATTITUDE. Ton rôle est de décrire très précisément ce vêtement pour qu'un moteur de recherche puisse le retrouver dans une base de données.
+            { 
+              type: "text", 
+              text: `Tu es un expert en analyse visuelle et indexation de données. Ton rôle est de décrire très précisément l'objet ou le sujet principal de cette image de manière totalement neutre, sans te limiter à un secteur spécifique (mode, tech, alimentation, maison, etc.).
 
 # INSTRUCTIONS :
-1. ANALYSE : Identifie le type de vêtement (Robe, Ensemble, Pantalon Cargo, Top, Corset, etc.).
-2. DÉTAILS TECHNIQUES : Précise la couleur exacte, la matière (si visible), les motifs (fleurs, uni, léopard), et la coupe (oversize, cintré, fendu, taille haute).
-3. ÉLÉMENTS DISTINCTIFS : Note la présence de poches, de boutons, de fermetures éclair, de strass ou de dentelle.
-4. TEXTE : Ignore le texte publicitaire TikTok, mais si un prix ou une marque est écrit à la main sur l'image, note-le.
+1. SUJET PRINCIPAL : Identifie immédiatement l'objet central ou la scène de l'image.
+2. ATTRIBUTS VISUELS : Précise la couleur prédominante, les formes géométriques, les matériaux apparents (métal, plastique, verre, tissu) et l'aspect général (moderne, vintage, neuf, usé).
+3. MARQUES & TEXTES : Si une marque, un texte important ou un logo est distinctement visible sur l'objet ou l'emballage, mentionne-le textuellement.
+4. NEUTRALE : Ignore l'arrière-plan s'il n'apporte rien à la compréhension de l'objet principal.
 
-# FORMAT DE RÉPONSE ATTENDU (Court et dense) :
-[Catégorie] - [Couleur] - [Style/Coupe] - [Détails]
+# FORMAT DE RÉPONSE ATTENDU (Court, factuel et dense) :
+[Sujet Principal/Catégorie] - [Couleurs & Matériaux] - [Caractéristiques/Détails Distinctifs]
 
-Exemple : "Ensemble de sport - Bleu ciel - Cintré - Matière élastique avec logo blanc sur la poitrine."
+Exemples de résultats attendus :
+- "Téléphone portable - Noir et aluminium - Écran tactile fissuré avec logo Apple visible au dos."
+- "Chaise de bureau - Bleu turquoise et plastique blanc - Modèle ergonomique à roulettes avec accoudoirs réglables."
+- "Bouteille de jus de fruits - Transparent et étiquette verte - Contenu orange avec inscription '100% Pur Jus' rédigée à la main."
 
-Si l'image ne représente absolument pas un vêtement ou un accessoire de mode, commence ta réponse par le mot 'HORS_SUJET'. C'est important pour qu'une recherche textuelle puisse le retrouver.` },
-            { type: "image_url", image_url: { url: imageUrl } }
+Si l'image est floue, vide, ou s'il est impossible d'identifier un objet concret, commence obligatoirement ta réponse par le mot exact 'HORS_SUJET'.` 
+            },
+            { 
+              type: "image_url", 
+              image_url: { url: imageUrl } 
+            }
           ],
         },
       ],
     });
 
-    const visualDescription = aiResponse.choices[0].message.content;
+    const visualDescription = aiResponse.choices[0].message.content + " - " + description;
 
-    // 3. Enregistrement Prisma
+    // 3. Enregistrement dans votre base de données via Prisma
     const product = await prisma.product.create({
       data: {
         name,
@@ -56,7 +66,7 @@ Si l'image ne représente absolument pas un vêtement ou un accessoire de mode, 
         stock: parseInt(stock),
         category,
         imageUrl,
-        visualDescription,
+        visualDescription: visualDescription || "Aucune description disponible.",
         userId: req.userId
       }
     });
@@ -68,12 +78,32 @@ Si l'image ne représente absolument pas un vêtement ou un accessoire de mode, 
   }
 };
 
+
 export const getAllProducts = async (req: Request, res: Response) => {
-  const products = await prisma.product.findMany({
-    orderBy: { createdAt: 'desc' }
-  });
-  res.json(products);
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const totalProducts = products.length;
+    
+    const stockValue = products.reduce((acc, product) => {
+      return acc + (product.price * product.stock);
+    }, 0);
+
+    res.json({
+      products,
+      stats: {
+        totalProducts,
+        stockValue
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur lors de la récupération du catalogue." });
+  }
 };
+
 export const searchProducts = async (req: Request, res: Response) => {
   try {
     const { q } = req.query;

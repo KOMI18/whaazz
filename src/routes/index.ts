@@ -7,10 +7,10 @@ import {authenticate} from '../middlewares/auth.middleware.js';
 import webhookRoutes from './webhook.route.js';
 const router = Router();
 router.use('/auth', authRoutes);    
+router.use('/products', productRoutes);
+router.use('/orders', orderRoutes);
 
 router.use('/webhook', webhookRoutes);
 router.use(authenticate);
-router.use('/products', productRoutes);
-router.use('/orders', orderRoutes);
 router.use('/agents', agentRoutes);
 export default router;

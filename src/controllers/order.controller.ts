@@ -3,7 +3,7 @@ import prisma from '../config/prisma.js';
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { customerPhone, productId, quantity } = req.body;
+    const { customerPhone, productId, quantity , location , customer_name } = req.body;
 
     const product = await prisma.product.findUnique({ where: { id: productId } });
     if (!product) return res.status(404).json({ error: "Produit non trouvé" });
@@ -14,6 +14,8 @@ export const createOrder = async (req: Request, res: Response) => {
         customerPhone,
         totalAmount: product.price * (quantity || 1),
         status: 'PENDING',
+        location,
+        customer_name,
         items: {
           create: {
             productId: product.id,

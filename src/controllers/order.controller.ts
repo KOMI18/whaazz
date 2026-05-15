@@ -38,6 +38,32 @@ export const createOrder = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllOrders = async (req: Request, res: Response) => {
+  try {
+    const orders = await prisma.order.findMany({
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true 
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur lors de la récupération des commandes." });
+  }
+};
+
 export const checkPaymentStatus = async (req: Request, res: Response) => {
   try {
     const { orderId } = req.params;

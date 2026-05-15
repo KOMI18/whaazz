@@ -5,10 +5,11 @@ import agentRoutes from './agent.routes.js';
 import authRoutes from './auth.routes.js';
 import {authenticate} from '../middlewares/auth.middleware.js';
 import webhookRoutes from './webhook.route.js';
+import n8nRoutes from './n8n.routes.js';
 const router = Router();
 router.use('/auth', authRoutes);    
 router.use('/orders', orderRoutes);
-
+router.use('/' , n8nRoutes);
 router.use('/webhook', webhookRoutes);
 router.use(authenticate);
 router.use('/products', productRoutes);

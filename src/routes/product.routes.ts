@@ -9,6 +9,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/create', upload.single('image'), createProduct);
 router.get('/', getAllProducts);
 
-router.get('/search', searchProducts);
+// router.get('/search', searchProducts);
 
 export default router;

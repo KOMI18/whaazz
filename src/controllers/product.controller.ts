@@ -106,7 +106,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
 export const searchProducts = async (req: Request, res: Response) => {
   try {
-    const { q } = req.query;
+    const { q ,  userId } = req.query;
     const queryStr = String(q);
 
     // 1. On nettoie la chaîne (on enlève les tirets et on découpe par espace)
@@ -115,17 +115,18 @@ export const searchProducts = async (req: Request, res: Response) => {
       .split(/\s+/)
       .filter(word => word.length > 2); // On ignore les petits mots comme "le", "de"
 
-    const products = await prisma.product.findMany({
-      where: {
-        OR: keywords.map(word => ({
-            OR: [
+        const products = await prisma.product.findMany({
+          where: {
+            OR: keywords.map(word => ({
+              OR: [
                 { name: { contains: word, mode: 'insensitive' } },
                 { visualDescription: { contains: word, mode: 'insensitive' } }
-            ]
-            }))
-    },
-    take: 5
-    });
+              ]
+            })),
+            userId: userId as string
+          },
+          take: 5
+        });
 
     res.json(products);
   } catch (error) {

@@ -20,6 +20,7 @@ model User {
   agents    Agent[]
   products Product[]
   @@map("users")
+  orders Order[]
 }
  
 
@@ -36,9 +37,10 @@ model Agent {
   userId         String   @map("user_id")
   user           User     @relation(fields: [userId], references: [id])
   status         AGENTSTATUS @default(DISCONNECTED)
- 
+  
   
   createdAt      DateTime @default(now()) @map("created_at")
+  bookableResources BookableResource[]
 
   @@map("agents")
 }
@@ -52,8 +54,6 @@ model Product {
   category          String?
   imageUrl          String?     @map("image_url")
   visualDescription String?     @map("visual_description") @db.Text
-  
-
   userId            String
   user              User     @relation(fields: [userId], references: [id])
   createdAt         DateTime    @default(now()) @map("created_at")
@@ -66,6 +66,8 @@ model Order {
   id            Int         @id @default(autoincrement())
   customerPhone String?      @map("customer_phone")
   totalAmount   Int         @map("total_amount")
+  user          User @relation(fields: [userId] , references: [id])
+  userId        String
   status        String      @default("PENDING") // PENDING, PAID, SHIPPED, CANCELLED
   paymentRef    String?     @map("payment_ref")
   location      String?
@@ -86,6 +88,58 @@ model OrderItem {
   product Product @relation(fields: [productId], references: [id])
 
   @@map("order_items")
+}
+// ========  BOOKING & APPOINTMENT MODEL =============
+
+model BookableResource {
+  id            String         @id @default(uuid())
+  title         String
+  agentId       String
+  description   String
+  price         String
+  agent         Agent @relation(fields: [agentId] , references: [id])
+  bookingType   String         // TIME_SLOT, CAPACITY, DATE_RANGE
+  duration      Int?           // Rempli si TIME_SLOT
+  maxCapacity   Int            @default(1) // Rempli si CAPACITY
+  
+  // Le "Quand" est stocké ici
+  availabilities Availability[]
+  bookings       Booking[]
+  @@map("Bookable_resource")
+}
+model Availability {
+  id                 String           @id @default(uuid())
+  bookableResourceId String
+  resource           BookableResource @relation(fields: [bookableResourceId], references: [id])
+  
+  // Pour le Cas A (TIME_SLOT - Récurrent)
+  dayOfWeek          Int?             // 1 = Lundi, 2 = Mardi...
+  startTime          String?          // "09:00"
+  endTime            String?          // "18:00"
+  
+  // Pour le Cas B (CAPACITY - Événement unique)
+  specificDate       DateTime?        // Ex: 2026-06-15T14:30:00Z
+  
+  // Pour le Cas C (DATE_RANGE - Périodes d'indisponibilité / Blocage)
+  isUnavailableBlock Boolean          @default(false)
+  blockStartDate     DateTime?
+  blockEndDate       DateTime?
+  @@map("availability")
+}
+model Booking {
+  id                 String           @id @default(uuid())
+  bookableResourceId String
+  resource           BookableResource @relation(fields: [bookableResourceId], references: [id])
+  customerName       String
+  customerPhone      String
+  
+  // Ces champs couvrent tous les cas de figure
+  startDate          DateTime         // Date/Heure de début (ou check-in)
+  endDate            DateTime?        // Date/Heure de fin (ou check-out)
+  
+  status             String           @default("PENDING") // PENDING, CONFIRMED, CANCELLED
+  createdAt          DateTime         @default(now())
+  @@map("booking")
 }
 // ====== N8N MODEL========
 model Chat {

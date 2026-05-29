@@ -26,10 +26,8 @@ export const handleEvolutionWebhook = async (req: Request, res: Response) => {
         const workflowData = await prisma.agent.findFirst({
           where: {
             instanceName: instance
-          },
-          include:{
-            user: true
           }
+         
         });
        
         return res.status(200).json(workflowData);

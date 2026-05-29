@@ -66,6 +66,7 @@ export const getAgentQRCode = async (req: Request, res: Response) => {
 
     res.json(connectionData);
   } catch (error) {
+    
     res.status(500).json({ error: "Impossible de générer le QR Code." });
   }
 };
@@ -98,7 +99,18 @@ export const getAgentsId = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erreur lors de la recherche des agents." });
   }
 };
-
+export const getAgentByInstanceName = async (req: Request, res: Response) => {
+  try {
+    const agent = await prisma.agent.findFirst({
+      where: {
+        instanceName: req.params.instanceName as string
+      }
+    });
+    res.json(agent);
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de la recherche de l'agent." });
+  }
+};
 export const LogouInstance = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

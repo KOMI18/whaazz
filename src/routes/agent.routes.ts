@@ -1,9 +1,10 @@
 import { Router } from 'express';
+import {authenticate} from '../middlewares/auth.middleware.js';
 import { createAgent, getAgentQRCode , getAgents, updateAgent , getAgentsId  , LogouInstance , DeleteInstance} from '../controllers/agent.controller.js';
 const router = Router();
-
-router.post('/create', createAgent);
+router.post('/create' ,  createAgent);
 router.get('/:id/qrcode', getAgentQRCode);
+
 router.get('/', getAgents);
 router.get('/:id', getAgentsId);
 router.put('/:id', updateAgent);

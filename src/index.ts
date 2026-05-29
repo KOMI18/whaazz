@@ -1,6 +1,7 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import cors, { CorsOptions } from 'cors';
-import 'dotenv/config';
 import routes from './routes/index.js';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';

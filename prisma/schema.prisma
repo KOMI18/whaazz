@@ -11,6 +11,16 @@ enum AGENTSTATUS {
   DISCONNECTED
   CONNECTING
 }
+enum BookingStatus {
+  PENDING
+  CONFIRMED 
+  CANCELLE
+}
+enum BookingType {
+    TIME_SLOT
+    CAPACITY
+    DATE_RANGE
+}
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -98,7 +108,7 @@ model BookableResource {
   description   String
   price         String
   agent         Agent @relation(fields: [agentId] , references: [id])
-  bookingType   String         // TIME_SLOT, CAPACITY, DATE_RANGE
+  bookingType   BookingType         
   duration      Int?           // Rempli si TIME_SLOT
   maxCapacity   Int            @default(1) // Rempli si CAPACITY
   
@@ -107,6 +117,7 @@ model BookableResource {
   bookings       Booking[]
   @@map("Bookable_resource")
 }
+
 model Availability {
   id                 String           @id @default(uuid())
   bookableResourceId String
@@ -137,10 +148,11 @@ model Booking {
   startDate          DateTime         // Date/Heure de début (ou check-in)
   endDate            DateTime?        // Date/Heure de fin (ou check-out)
   
-  status             String           @default("PENDING") // PENDING, CONFIRMED, CANCELLED
+  status             BookingStatus    @default(PENDING) 
   createdAt          DateTime         @default(now())
   @@map("booking")
 }
+
 // ====== N8N MODEL========
 model Chat {
   id             String    @id

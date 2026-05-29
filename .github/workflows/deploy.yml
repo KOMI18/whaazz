@@ -52,6 +52,7 @@ jobs:
             echo "EVOLUTION_INSTANCE_TOKEN=${{ secrets.EVOLUTION_INSTANCE_TOKEN }}" >> .env
             echo "WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}" >> .env
             echo "ORIGIN=${{ secrets.ORIGIN }}" >> .env
+            echo "N8N_INTERNAL_KEY=${{ secrets.N8N_INTERNAL_KEY }}" >> .env
             
             # 5. Relance du container
             docker compose up -d --build

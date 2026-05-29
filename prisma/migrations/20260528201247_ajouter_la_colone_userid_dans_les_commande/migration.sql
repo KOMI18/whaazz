@@ -7,7 +7,7 @@
 -- AlterTable
 
 ALTER TABLE "orders" ADD COLUMN "userId" TEXT;
-
+-- LOCAL USER cmp5a3qic0000gwncavg0qwnf PROD USER :cmp58xen0000001o1itvou49u
 UPDATE "orders" SET "userId" = 'cmp58xen0000001o1itvou49u' WHERE "userId" IS NULL;
 
 ALTER TABLE "orders" ALTER COLUMN "userId" SET NOT NULL;

@@ -20,6 +20,7 @@ enum BookingType {
     TIME_SLOT
     CAPACITY
     DATE_RANGE
+    CAPACITY_RECURRENT
 }
 model User {
   id        String   @id @default(cuid())
@@ -106,7 +107,7 @@ model BookableResource {
   title         String
   agentId       String
   description   String
-  price         String
+  price         Float
   agent         Agent @relation(fields: [agentId] , references: [id])
   bookingType   BookingType         
   duration      Int?           // Rempli si TIME_SLOT
@@ -130,7 +131,7 @@ model Availability {
   
   // Pour le Cas B (CAPACITY - Événement unique)
   specificDate       DateTime?        // Ex: 2026-06-15T14:30:00Z
-  
+  maxCapacity        Int              @default(1)
   // Pour le Cas C (DATE_RANGE - Périodes d'indisponibilité / Blocage)
   isUnavailableBlock Boolean          @default(false)
   blockStartDate     DateTime?

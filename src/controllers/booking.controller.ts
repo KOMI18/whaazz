@@ -2,6 +2,7 @@ import { Request , Response } from 'express';
 import prisma from '../config/prisma.js';
 import { BookingStatus, BookingType } from '../types/booking.js';
 import { addDays, startOfDay, endOfDay, format, getDay } from 'date-fns';
+
 //Ce contrôleur permet à l'IA de lister tout ce qui est disponible à la réservation pour l'agent en cours.
 export const searchBookingCatalog = async (req: Request, res: Response) => {
   try {
@@ -348,5 +349,17 @@ export const createBookableResource = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Erreur createBookableResource:", error);
     return res.status(500).json({ error: "Erreur interne lors de la création du service." });
+  }
+};
+export const getAllBookings = async (req: Request, res: Response) => {
+  try {
+    const { agentId } = req.query;
+    const resources = await prisma.bookableResource.findMany({
+      where: { agentId: String(agentId) },
+      include: { availabilities: true }
+    });
+    res.json(resources);
+  } catch (e){
+    console.log('error', e  )
   }
 };

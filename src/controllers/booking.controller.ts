@@ -363,3 +363,67 @@ export const getAllBookings = async (req: Request, res: Response) => {
     console.log('error', e  )
   }
 };
+export const addResourceAvailabilities = async (req: Request, res: Response) => {
+  try {
+   
+    const { availabilities , id } = req.body; 
+    // 1. Validation des entrées de base
+    if (!id) {
+      return res.status(400).json({ error: "L'identifiant du service est obligatoire." });
+    }
+
+    if (!availabilities || !Array.isArray(availabilities) || availabilities.length === 0) {
+      return res.status(400).json({ error: "Un tableau de disponibilités non vide est requis." });
+    }
+
+    // 2. Vérifier si la ressource existe et récupérer son type de gestion (bookingType)
+    const existingResource = await prisma.bookableResource.findUnique({
+      where: { id },
+    });
+
+    if (!existingResource) {
+      return res.status(404).json({ error: "Le service spécifié est introuvable." });
+    }
+
+    // 3. Traitement et injection des nouvelles disponibilités
+    const updatedResource = await prisma.bookableResource.update({
+      where: { id },
+      data: {
+        availabilities: {
+          // On utilise "create" pour ajouter les nouveaux éléments au tableau existant
+          create: availabilities.map((av: any) => {
+            
+            // Logique de capacité identique à ton service de création
+            let slotCapacity = 1;
+            if (existingResource.bookingType === "CAPACITY_RECURRENT") {
+              slotCapacity = av.maxCapacity ? Number(av.maxCapacity) : 10;
+            } else if (existingResource.bookingType === "CAPACITY") {
+              slotCapacity = existingResource.maxCapacity; 
+            }
+
+            return {
+              dayOfWeek: av.dayOfWeek !== undefined ? Number(av.dayOfWeek) : null,
+              startTime: av.startTime || null,
+              endTime: av.endTime || null,
+              maxCapacity: slotCapacity,
+              specificDate: av.specificDate ? new Date(av.specificDate) : null,
+              isUnavailableBlock: av.isUnavailableBlock || false,
+              blockStartDate: av.blockStartDate ? new Date(av.blockStartDate) : null,
+              blockEndDate: av.blockEndDate ? new Date(av.blockEndDate) : null,
+            };
+          }),
+        },
+      },
+      // On inclut les disponibilités mises à jour pour renvoyer la ressource complète au front-end
+      include: {
+        availabilities: true,
+      },
+    });
+
+    return res.status(200).json(updatedResource);
+
+  } catch (error) {
+    console.error("Erreur addResourceAvailabilities:", error);
+    return res.status(500).json({ error: "Erreur interne lors de l'ajout des disponibilités." });
+  }
+};

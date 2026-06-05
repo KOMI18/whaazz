@@ -39,7 +39,7 @@ export const register = async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
     });
-    res.status(201).json({ message: "Utilisateur créé avec succès" , user:user });
+    res.status(201).json({ message: "Utilisateur créé avec succès" , user:{ id: user.id, name: user.name, email: user.email , module: user.modules} });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Erreur lors de l'inscription." });

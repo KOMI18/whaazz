@@ -28,12 +28,20 @@ model User {
   password  String
   name      String?
   createdAt DateTime @default(now()) @map("created_at")
+  modules   String[]
   agents    Agent[]
-  products Product[]
+  products  Product[]
   @@map("users")
   orders Order[]
 }
- 
+// model AppModel {
+//   id          String @id @default(cuid())
+//   name        String
+//   description String
+//   userId      String
+//   user        User @relation(fields: [userId] , references: [id])
+  
+// } 
 
 // --- MULTI-AGENT MANAGEMENT ---
 model Agent {

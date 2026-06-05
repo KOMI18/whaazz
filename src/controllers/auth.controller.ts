@@ -7,24 +7,39 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, name } = req.body;
-
+    const { email, password, name , confirmPassword , modules } = req.body;
+    if(password !== confirmPassword){
+      return res.status(400).json({error:"Les mots de passes ne corespondent pas"})
+    }
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) return res.status(400).json({ error: "Cet email est déjà utilisé." });
 
     // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    
     const user = await prisma.user.create({
       data: {
         email,
         name,
-        password: hashedPassword
+        password: hashedPassword,
+        modules : modules
       }
     });
-
-    res.status(201).json({ message: "Utilisateur créé avec succès" });
+    const token = jwt.sign(
+      { userId: user.id, email: user.email  , modules: user.modules},
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.cookie('whaazz_token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      // domain: '.invity.site',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+    res.status(201).json({ message: "Utilisateur créé avec succès" , user:user });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Erreur lors de l'inscription." });
@@ -43,7 +58,7 @@ export const login = async (req: Request, res: Response) => {
 
     // Générer le Token
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, email: user.email , modules: user.modules },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -51,12 +66,12 @@ export const login = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      domain: '.invity.site',
+      // domain: '.invity.site',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
     });
     res.json({
-       id: user.id, name: user.name, email: user.email 
+       id: user.id, name: user.name, email: user.email , module: user.modules
     });
   } catch (error) {
     console.log(error);

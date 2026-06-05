@@ -307,6 +307,7 @@ export const createBookableResource = async (req: Request, res: Response) => {
         agentId,
         title,
         description,
+        userId: req.userId,
         price: price,
         bookingType,
         duration: finalDuration,
@@ -425,5 +426,56 @@ export const addResourceAvailabilities = async (req: Request, res: Response) => 
   } catch (error) {
     console.error("Erreur addResourceAvailabilities:", error);
     return res.status(500).json({ error: "Erreur interne lors de l'ajout des disponibilités." });
+  }
+};
+export const getUserBookings = async (req: Request, res: Response) => {
+  try {
+    // Récupération de l'ID utilisateur injecté par ton middleware d'authentification
+    const userId = (req as any).user?.id || (req as any).userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Utilisateur non authentifié." });
+    }
+
+    // Récupère les réservations dont la ressource appartient à l'utilisateur connecté
+    const bookings = await prisma.booking.findMany({
+      where: {
+        resource: {
+          userId: userId // Filtre pour s'assurer que la ressource appartient bien au user connecté
+        }
+      },
+      include: {
+        resource: {
+          select: {
+            title: true,  // Récupère le nom de la prestation (ex: "Séance Pilates")
+            price: true  // Récupère le tarif de la prestation
+          }
+        }
+      },
+      orderBy: {
+        startDate: "desc" // Les plus récentes en premier
+      }
+    });
+
+    // Formate les données pour correspondre exactement à ce qu'attend ton frontend
+    const formattedBookings = bookings.map((b) => ({
+      id: b.id,
+      clientName: b.customerName,
+      clientPhone: b.customerPhone,
+      serviceTitle: b.resource?.title || "Prestation inconnue",
+      date: new Date(b.startDate),
+      timeSlot: `${new Date(b.startDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} - ${
+        b.endDate ? new Date(b.endDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "N/A"
+      }`,
+      price: b.resource?.price || 0,
+      status: b.status, // "PENDING", "CONFIRMED", ou "CANCELLED"
+      paymentStatus: b.status === "CONFIRMED" ? "PAID" : "UNPAID" // Simulation simple ou à adapter selon ton besoin
+    }));
+
+    return res.status(200).json(formattedBookings);
+
+  } catch (error) {
+    console.error("Erreur getUserBookings:", error);
+    return res.status(500).json({ error: "Impossible de récupérer les réservations." });
   }
 };

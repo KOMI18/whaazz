@@ -82,6 +82,9 @@ Si l'image est floue, vide, ou s'il est impossible d'identifier un objet concret
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const products = await prisma.product.findMany({
+      where: {
+        userId: req.userId
+      },
       orderBy: { createdAt: 'desc' }
     });
 

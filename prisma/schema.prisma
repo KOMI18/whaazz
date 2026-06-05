@@ -16,6 +16,10 @@ enum BookingStatus {
   CONFIRMED 
   CANCELLE
 }
+enum PaymentStatus{
+  UNPAID
+  PAID
+}
 enum BookingType {
     TIME_SLOT
     CAPACITY
@@ -31,6 +35,7 @@ model User {
   modules   String[]
   agents    Agent[]
   products  Product[]
+  bookableRessource BookableResource[]
   @@map("users")
   orders Order[]
 }
@@ -114,6 +119,8 @@ model BookableResource {
   id            String         @id @default(uuid())
   title         String
   agentId       String
+  userId        String?
+  user          User? @relation(fields: [userId] , references: [id])
   description   String
   price         Float
   agent         Agent @relation(fields: [agentId] , references: [id])
@@ -156,7 +163,7 @@ model Booking {
   // Ces champs couvrent tous les cas de figure
   startDate          DateTime         // Date/Heure de début (ou check-in)
   endDate            DateTime?        // Date/Heure de fin (ou check-out)
-  
+  paymentStatus      PaymentStatus    @default(UNPAID)
   status             BookingStatus    @default(PENDING) 
   createdAt          DateTime         @default(now())
   @@map("booking")
